@@ -13,7 +13,7 @@ Mapeado do briefing "Ask the Airport" e do documento de credenciais. Ordem = ord
 |---|---|---|---|
 | TiDB Cloud Starter em sa-east-1 | 10 | `backend/db.py` conecta com TLS; DDL automático | Criar cluster Starter (AWS · São Paulo), **Import from S3** do dump pelo console, preencher `TIDB_HOST/USER/PASSWORD` no `.env`. Não restringir IP. |
 | Busca vetorial (VECTOR + VEC_COSINE_DISTANCE ou EMBED_TEXT) | 8 | `carbon_project.embedding` e `eco_knowledge.emb` gerados por `EMBED_TEXT`; consulta em `backend/greenflight.py` e `backend/db.py`; referência `sql/setup_tidb.sql` | Rodar uma vez com TiDB e conferir no SQL Editor: `SELECT name FROM carbon_project ORDER BY VEC_COSINE_DISTANCE(embedding, EMBED_TEXT('tidbcloud_free/amazon/titan-embed-text-v2','florestas brasileiras')) LIMIT 3;` |
-| Amazon Bedrock (ap-southeast-1) | 8 | `backend/bedrock.py`: Claude 3 Haiku (explicação e recomendação), Sonnet e Cohere disponíveis | Chave no `.env`; `cd backend && ./.venv/bin/python -c "import bedrock; print(bedrock.selftest())"` |
+| Amazon Bedrock (ap-southeast-1) | 8 | `backend/bedrock.py`: Claude 3 Haiku (explicação e recomendação), Sonnet e Cohere disponíveis | Feito: chave do time no `.env` local, `bedrock.selftest()` respondeu OK em ap-southeast-1 |
 | Publicado na AWS (EC2 sa-east-1) | 8 | `deploy.sh`, porta 8000, bind 0.0.0.0, `setsid nohup` | Session Manager → `bash deploy.sh` → anotar o IP público (muda a cada stop/start) no `SUBMISSION.md` |
 | Construído com Kiro (.kiro/) | 6 | `.kiro/specs/greenflight/`, `.kiro/steering/`, `.kiro/hooks/`, `.kiro/settings/mcp.json` commitados | Abrir a pasta no Kiro e continuar por lá (as tarefas 8–11 do `tasks.md`) |
 

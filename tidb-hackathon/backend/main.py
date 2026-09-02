@@ -60,7 +60,7 @@ def suggested_routes():
         return db.rows(cur)
 
 
-def _flight_rows(where: str, params: tuple) -> list[dict]:
+def _flight_rows(where: str, params: tuple, limit: int = 60) -> list[dict]:
     hint = "/*+ READ_FROM_STORAGE(TIFLASH[b]) */ " if db.USING_TIDB else ""
     sql = (
         "SELECT f.flight_id, f.flightno, f.departure, f.arrival, al.airlinename AS airline, t.identifier AS aircraft, p.capacity, "
@@ -73,7 +73,7 @@ def _flight_rows(where: str, params: tuple) -> list[dict]:
         "JOIN airplane p ON p.airplane_id = f.airplane_id JOIN airplane_type t ON t.type_id = p.type_id "
         "JOIN airport a1 ON a1.airport_id = f.`from` JOIN airport_geo g1 ON g1.airport_id = f.`from` "
         "JOIN airport a2 ON a2.airport_id = f.`to` JOIN airport_geo g2 ON g2.airport_id = f.`to` "
-        f"WHERE {where} ORDER BY f.departure LIMIT 60")
+        f"WHERE {where} ORDER BY f.departure LIMIT {int(limit)}")
     with db.cursor() as cur:
         cur.execute(sql, params)
         return [_enrich(r) for r in db.rows(cur)]
@@ -170,8 +170,9 @@ def purchase(p: Purchase):
         purchase_id = cur.lastrowid
     after = _flight_rows(f"f.flight_id = {db.PH}", (p.flight_id,))[0]   # ocupação já com a nova compra
     passenger_key = (p.email or p.passenger_name).strip().lower()
+    after["label"] = chosen["label"]   # selo relativo à busca, igual ao que o comprador viu
     receipt = {"purchase_id": purchase_id, "flight": after, "passenger_name": p.passenger_name, "passenger_key": passenger_key,
-               "co2_kg": after["per_pax_kg"], "co2_avoided_kg": avoided, "label": after["label"], "alternatives": alts,
+               "co2_kg": after["per_pax_kg"], "co2_avoided_kg": avoided, "label": chosen["label"], "alternatives": alts,
                "offset_quote": greenflight.offset_quote(after["per_pax_kg"]), "wallet": greenflight.wallet(passenger_key)}
     receipt["s3_key"] = _export_receipt(receipt)
     return receipt
@@ -286,6 +287,63 @@ def rewards_wallet(key: str):
 @app.get("/api/esg")
 def esg():
     return greenflight.esg_dashboard()
+
+
+_cache: dict = {}
+
+
+def _cached(key: str, ttl: float, fn):
+    import time
+    hit = _cache.get(key)
+    if hit and time.time() - hit[0] < ttl:
+        return hit[1]
+    val = fn(); _cache[key] = (time.time(), val)
+    return val
+
+
+def _all_brazil_flights() -> list[dict]:
+    return _cached("br_flights", 120, lambda: _flight_rows("g1.country = 'BRAZIL' OR g2.country = 'BRAZIL'", (), limit=10000))
+
+
+@app.get("/api/esg/routes")
+def esg_routes(price_per_ton: float = greenflight.CARBON_CREDIT_PRICE_PER_TON, limit: int = 15):
+    """Análise por trecho sobre o airportdb inteiro (voos que tocam o Brasil): emissão, ocupação e valor da compensação."""
+    agg: dict[str, dict] = {}
+    for r in _all_brazil_flights():
+        k = f"{r['from']['city']} → {r['to']['city']}"
+        a = agg.setdefault(k, {"route": k, "flights": 0, "flight_kg": 0.0, "pax": 0, "pax_kg": 0.0, "km": r["distance_km"], "seats": 0})
+        a["flights"] += 1; a["flight_kg"] += r["flight_kg"]; a["pax"] += r["booked"]; a["pax_kg"] += r["per_pax_kg"]; a["seats"] += r["capacity"]
+    rows = []
+    for a in agg.values():
+        tons = a["flight_kg"] / 1000.0
+        rows.append({"route": a["route"], "flights": a["flights"], "distance_km": a["km"], "occupancy": round(a["pax"] / max(a["seats"], 1), 2),
+                     "avg_kg_per_pax": round(a["pax_kg"] / a["flights"], 1), "total_tons": round(tons, 1),
+                     "offset_value_brl": round(tons * price_per_ton, 2), "price_per_ton": price_per_ton})
+    total = {"routes": len(rows), "flights": sum(r["flights"] for r in rows), "total_tons": round(sum(r["total_tons"] for r in rows), 1),
+             "offset_value_brl": round(sum(r["offset_value_brl"] for r in rows), 2), "price_per_ton": price_per_ton}
+    return {"summary": total, "cleanest": sorted(rows, key=lambda x: x["avg_kg_per_pax"])[:limit],
+            "heaviest": sorted(rows, key=lambda x: x["total_tons"], reverse=True)[:limit]}
+
+
+DEMO_DATE = "2015-06-04"
+
+
+@app.get("/api/live")
+def live():
+    """Relógio de demo: a hora atual mapeada para 04/06/2015. Emissão acumulada dos voos que já decolaram e próximas partidas."""
+    def calc():
+        now = datetime.now()
+        clock = datetime.fromisoformat(f"{DEMO_DATE} {now:%H:%M:%S}")
+        flights = [r for r in _all_brazil_flights() if r["departure"].startswith(DEMO_DATE)]
+        departed = [r for r in flights if datetime.fromisoformat(r["departure"]) <= clock]
+        upcoming = sorted([r for r in flights if datetime.fromisoformat(r["departure"]) > clock], key=lambda r: r["departure"])[:4]
+        return {"clock": clock.strftime("%d/%m %H:%M:%S"), "flights_today": len(flights), "flights_departed": len(departed),
+                "pax_departed": sum(r["booked"] for r in departed),
+                "tons_emitted": round(sum(r["flight_kg"] for r in departed) / 1000.0, 2),
+                "offset_value_brl": round(sum(r["flight_kg"] for r in departed) / 1000.0 * greenflight.CARBON_CREDIT_PRICE_PER_TON, 2),
+                "next": [{"flightno": r["flightno"], "route": f"{r['from']['code']} → {r['to']['code']}", "departure": r["departure"][11:16],
+                          "per_pax_kg": r["per_pax_kg"], "occupancy": r["occupancy"], "label": r["label"]} for r in upcoming]}
+    return _cached("live", 3, calc)
 
 
 DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"

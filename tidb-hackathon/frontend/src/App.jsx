@@ -26,6 +26,22 @@ function Airport({ label, value, onPick }) {
   )
 }
 
+function LiveTicker() {
+  const [live, setLive] = useState(null)
+  useEffect(() => { const f = () => api('/api/live').then(setLive).catch(() => {}); f(); const id = setInterval(f, 4000); return () => clearInterval(id) }, [])
+  if (!live) return null
+  return (
+    <div className="live">
+      <div className="pulse" /><b>Emissão em tempo real</b><span>{live.clock}</span>
+      <span>{live.flights_departed}/{live.flights_today} voos decolaram</span>
+      <span>{live.pax_departed} passageiros</span>
+      <span className="hot">{live.tons_emitted} t CO₂ emitidas</span>
+      <span>compensar tudo: R$ {live.offset_value_brl}</span>
+      <span className="next">próximas: {live.next.map(n => `${n.departure} ${n.route} (${n.per_pax_kg} kg/pax · ${n.label})`).join(' · ')}</span>
+    </div>
+  )
+}
+
 export default function App() {
   const [view, setView] = useState('passenger')
   const [origin, setOrigin] = useState(null)
@@ -47,9 +63,10 @@ export default function App() {
   const [greenest, setGreenest] = useState([])
   const [question, setQuestion] = useState('')
   const [answer, setAnswer] = useState(null)
+  const [routesEsg, setRoutesEsg] = useState(null)
 
   const refresh = () => { api('/api/stats').then(setStats); api('/api/esg').then(setEsg) }
-  useEffect(() => { api('/api/routes/suggested').then(setSuggested); api('/api/health').then(setHealth); api('/api/routes/greenest').then(setGreenest); refresh() }, [])
+  useEffect(() => { api('/api/routes/suggested').then(setSuggested); api('/api/health').then(setHealth); api('/api/routes/greenest').then(setGreenest); api('/api/esg/routes').then(setRoutesEsg); refresh() }, [])
 
   const runSearch = async (o = origin, d = dest, dt = date) => {
     if (!o && !d) return
@@ -108,10 +125,30 @@ export default function App() {
             <div><h3>Projetos mais escolhidos</h3><table><tbody>{esg.top_projects.map(t => <tr key={t.name}><td>{t.name}</td><td>{t.offsets}×</td><td>{t.co2_kg} kg</td></tr>)}{!esg.top_projects.length && <tr><td>ainda sem compensações</td></tr>}</tbody></table></div>
             <div><h3>Adesão por rota</h3><table><tbody>{esg.by_route.map(t => <tr key={t.route}><td>{t.route}</td><td>{t.offsets}×</td><td>{t.co2_kg} kg</td></tr>)}{!esg.by_route.length && <tr><td>ainda sem compensações</td></tr>}</tbody></table></div>
           </div>
-          <h3>Rotas mais limpas da semana (kg CO₂ por passageiro, ocupação real)</h3>
+          {routesEsg && (<>
+            <h3>Análise por trecho · airportdb inteiro (voos que tocam o Brasil, semana de junho/2015)</h3>
+            <div className="grid">
+              <div><b>{routesEsg.summary.routes}</b><span>trechos</span></div>
+              <div><b>{routesEsg.summary.flights}</b><span>voos</span></div>
+              <div><b>{routesEsg.summary.total_tons} t</b><span>CO₂ estimado na semana</span></div>
+              <div><b>R$ {routesEsg.summary.price_per_ton}/t</b><span>valor por tonelada CO₂</span></div>
+              <div><b>R$ {routesEsg.summary.offset_value_brl}</b><span>para compensar a semana inteira</span></div>
+            </div>
+            <div className="two">
+              <div><h3>Trechos mais limpos (kg CO₂ por passageiro)</h3>
+                <table><thead><tr><th>Trecho</th><th>Voos</th><th>km</th><th>Ocup.</th><th>kg/pax</th><th>t CO₂</th><th>R$ compensação</th></tr></thead>
+                  <tbody>{routesEsg.cleanest.slice(0, 8).map(r => <tr key={r.route}><td>{r.route}</td><td>{r.flights}</td><td>{r.distance_km}</td><td>{Math.round(r.occupancy * 100)}%</td><td>{r.avg_kg_per_pax}</td><td>{r.total_tons}</td><td>R$ {r.offset_value_brl}</td></tr>)}</tbody></table></div>
+              <div><h3>Trechos que mais emitem (toneladas na semana)</h3>
+                <table><thead><tr><th>Trecho</th><th>Voos</th><th>km</th><th>Ocup.</th><th>kg/pax</th><th>t CO₂</th><th>R$ compensação</th></tr></thead>
+                  <tbody>{routesEsg.heaviest.slice(0, 8).map(r => <tr key={r.route}><td>{r.route}</td><td>{r.flights}</td><td>{r.distance_km}</td><td>{Math.round(r.occupancy * 100)}%</td><td>{r.avg_kg_per_pax}</td><td>{r.total_tons}</td><td>R$ {r.offset_value_brl}</td></tr>)}</tbody></table></div>
+            </div>
+          </>)}
+          <h3>Rotas mais limpas entre as próximas partidas (kg CO₂ por passageiro, ocupação real)</h3>
           <table><thead><tr><th>Rota</th><th>Voos</th><th>kg CO₂/pax</th><th>Preço médio</th></tr></thead><tbody>{greenest.map(g => <tr key={g.route}><td>{g.route}</td><td>{g.flights}</td><td>{g.avg_kg}</td><td>R$ {g.avg_price}</td></tr>)}</tbody></table>
         </section>
       )}
+
+      <LiveTicker />
 
       {view === 'passenger' && (<>
         <section className="search">
@@ -129,12 +166,13 @@ export default function App() {
               <h3>✓ Passagem confirmada · {receipt.flight.flightno} · {receipt.flight.from.city} → {receipt.flight.to.city} · {receipt.passenger_name}</h3>
               <p>R$ {receipt.flight.price.toFixed(2)} · <b>{receipt.co2_kg} kg CO₂</b> por passageiro (selo {receipt.label}) · você evitou <b>{receipt.co2_avoided_kg} kg</b> escolhendo este voo · ocupação agora {Math.round(receipt.flight.occupancy * 100)}%{receipt.s3_key ? ' · recibo no S3' : ''}</p>
               <p className="ai">{explain || 'Gerando explicação com Bedrock…'}</p>
+              <p className="points">Seus Green Points: <b>{receipt.wallet.total_points}</b> · próximo benefício: <b>{receipt.wallet.next_benefit.benefit}</b> (faltam {receipt.wallet.next_benefit.points_needed}) · compensando esta viagem você ganha <b>+{receipt.offset_quote.green_points}</b></p>
             </div>
             {!offset ? (
               <div className="offer">
                 <h3>🌱 Torne sua viagem mais verde</h3>
                 <div className="big">{receipt.co2_kg} kg CO₂ <small>estimados para o seu assento</small></div>
-                <p>Compense por <b>R$ {receipt.offset_quote.offset_price.toFixed(2)}</b> e ganhe <b>+{receipt.offset_quote.green_points} Green Points</b></p>
+                <p>Compense por <b>R$ {receipt.offset_quote.offset_price.toFixed(2)}</b> (R$ {receipt.offset_quote.price_per_ton}/tonelada) e ganhe <b>+{receipt.offset_quote.green_points} Green Points</b></p>
                 <label>Que tipo de projeto você gostaria de apoiar?</label>
                 <div className="row"><input value={pref} onChange={e => setPref(e.target.value)} /><button className="primary" onClick={recommend} disabled={rec?.loading}>{rec?.loading ? 'buscando…' : 'Recomendar projeto'}</button></div>
                 {rec && !rec.loading && (
