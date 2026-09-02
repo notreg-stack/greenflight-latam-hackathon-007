@@ -50,7 +50,7 @@ def main():
             print("ERRO:", str(e)[:200], "| statement:", st[:80].replace("\n", " "), flush=True)
     cur.execute("SET FOREIGN_KEY_CHECKS=1")
     for t in ["flight", "booking", "passenger", "airport", "airport_geo", "airplane", "airplane_type", "airline", "flightschedule", "weatherdata", "employee", "passengerdetails"]:
-        cur.execute(f"SELECT COUNT(*) FROM {t}"); print(t, cur.fetchone()[0], flush=True)
+        cur.execute(f"SELECT COUNT(*) AS n FROM {t}"); print(t, list(cur.fetchone().values())[0], flush=True)
     print(f"concluído: {n} statements, {ins} linhas, {time.time()-t0:.0f}s", flush=True)
 
 
