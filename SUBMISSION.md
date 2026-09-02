@@ -12,10 +12,10 @@ CO²mpensa Aí ("Compense sua pegada com um clique") mostra, no momento da compr
 O passageiro busca origem e destino no dataset airportdb; cada voo recebe selo A–E, kg CO₂ por passageiro (distância × aeronave ÷ ocupação, recalculado a cada compra) e preço, com um ticker de emissão em tempo real dos voos do dia. No checkout, o app mostra os Green Points e o próximo benefício, oferece a compensação com o valor por tonelada, o passageiro descreve o projeto que quer apoiar, o TiDB Vector Search acha os projetos mais próximos e o Bedrock recomenda e explica; ao confirmar, a compensação vira Green Points na carteira. O dashboard ESG da companhia mostra adesão, CO₂ compensado, projetos, adesão por rota e a análise do airportdb inteiro: emissão por trecho, toneladas na semana e valor da compensação por tonelada.
 
 ## Stack — marque o que você realmente usou
-- [ ] TiDB Cloud Starter na AWS sa-east-1 (cluster e conexão ainda não validados)
-- [ ] Busca vetorial no TiDB (implementada no código; execução no cluster ainda não validada)
+- [x] TiDB Cloud Starter na AWS sa-east-1 (cluster `co2mpensa-ai`, ID 10148050918410785156, Starter, Sao Paulo sa-east-1, criado em 02/09/2026 21:10; conexão do app em `tidb-hackathon/backend/db.py`; import do airportdb no cluster ainda em andamento, a demo roda no modo local com o dump oficial)
+- [ ] Busca vetorial no TiDB (coluna VECTOR + EMBED_TEXT implementadas em `tidb-hackathon/backend/greenflight.py` e `sql/setup_tidb.sql`; execução no cluster pendente do import)
 - [x] Amazon Bedrock (ap-southeast-1)
-- [ ] Publicado na AWS  -> URL no ar: (EC2 pendente; demo online em https://crimes-producers-ferrari-violation.trycloudflare.com)
+- [x] Publicado na AWS  -> URL no ar: http://18.230.65.112:8000 (EC2 t3.small em sa-east-1, instância i-08e5dc255aa088d0f, lançada por `tidb-hackathon/scripts/aws_launch.sh`; espelho: https://crimes-producers-ferrari-violation.trycloudflare.com)
 - [x] Construído com Kiro (`tidb-hackathon/.kiro/` commitado)
 
 ## Onde olhar
@@ -26,7 +26,7 @@ Chamadas ao Bedrock:     tidb-hackathon/backend/bedrock.py
 ## Demo
 Link do vídeo de 2 minutos ou da aplicação no ar:
 - Vídeo: https://github.com/notreg-stack/greenflight-latam-hackathon-007/raw/main/tidb-hackathon/docs/demo/greenflight-demo.mp4
-- Aplicação no ar (túnel para a demo, válido durante o evento): https://crimes-producers-ferrari-violation.trycloudflare.com
+- Aplicação no ar (AWS EC2 sa-east-1): http://18.230.65.112:8000 · espelho: https://crimes-producers-ferrari-violation.trycloudflare.com
 
 ## Como rodar
 ```bash
