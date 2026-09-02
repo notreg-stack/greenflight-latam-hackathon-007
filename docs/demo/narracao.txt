@@ -1,0 +1,8 @@
+[[slnc 1000]] GreenFlight. Ana quer viajar e vai escolher o assento pela pegada de carbono, não só pelo preço. [[slnc 1800]]
+Cada voo mostra quilos de CO2 por passageiro com a ocupação real, selo de A a E, preço e horário, já ordenados por carbono. [[slnc 2200]]
+Por preço, o mais barato nem sempre é o mais limpo. [[slnc 1200]] A escolha verde é o voo mais cheio: quem compra entra no denominador e a emissão por pessoa cai em tempo real. [[slnc 2500]]
+Compra confirmada: o recibo mostra o CO2 evitado contra a pior opção, a explicação gerada pelo Amazon Bedrock com os números do TiDB, e os Green Points com o próximo benefício. [[slnc 3000]]
+No checkout verde, Ana descreve o projeto que quer apoiar. O TiDB Vector Search encontra os mais próximos, com embeddings gerados dentro do banco, e o Bedrock recomenda um e explica por quê. [[slnc 3000]]
+Ela compensa e ganha Green Points. [[slnc 2500]]
+Para a companhia aérea, o dashboard ESG: adesão, CO2 compensado, projetos, adesão por rota e a análise do airportdb inteiro, com emissão por trecho, toneladas na semana e valor por tonelada. [[slnc 2500]]
+TiDB Cloud em São Paulo guarda transação, vetor e analytics na mesma base. Bedrock em Singapura explica e recomenda. EC2, S3 e specs no Kiro. Próximo passo: a emissão por trecho como API para os buscadores de passagens. GreenFlight: cada voo vira ação climática mensurável.

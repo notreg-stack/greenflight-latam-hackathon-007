@@ -37,3 +37,8 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# demo: só o mp4 final vai para o repositório
+docs/demo/*.webm
+docs/demo/*.m4a
+docs/demo/*.aiff
