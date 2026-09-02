@@ -170,8 +170,9 @@ def purchase(p: Purchase):
         purchase_id = cur.lastrowid
     after = _flight_rows(f"f.flight_id = {db.PH}", (p.flight_id,))[0]   # ocupação já com a nova compra
     passenger_key = (p.email or p.passenger_name).strip().lower()
+    after["label"] = chosen["label"]   # selo relativo à busca, igual ao que o comprador viu
     receipt = {"purchase_id": purchase_id, "flight": after, "passenger_name": p.passenger_name, "passenger_key": passenger_key,
-               "co2_kg": after["per_pax_kg"], "co2_avoided_kg": avoided, "label": after["label"], "alternatives": alts,
+               "co2_kg": after["per_pax_kg"], "co2_avoided_kg": avoided, "label": chosen["label"], "alternatives": alts,
                "offset_quote": greenflight.offset_quote(after["per_pax_kg"]), "wallet": greenflight.wallet(passenger_key)}
     receipt["s3_key"] = _export_receipt(receipt)
     return receipt
