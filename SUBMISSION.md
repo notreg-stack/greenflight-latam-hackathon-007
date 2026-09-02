@@ -16,18 +16,19 @@ O passageiro busca origem e destino no dataset airportdb; cada voo recebe selo A
 - [x] Busca vetorial no TiDB (coluna VECTOR ou EMBED_TEXT)
 - [x] Amazon Bedrock (ap-southeast-1)
 - [ ] Publicado na AWS  -> URL no ar: http://<ip-publico-da-ec2>:8000
-- [x] Construído com Kiro (.kiro/ commitado)
+- [x] Construído com Kiro (`tidb-hackathon/.kiro/` commitado)
 
 ## Onde olhar
-Conexão/consultas TiDB:  backend/db.py · backend/main.py · backend/greenflight.py · sql/setup_tidb.sql
-Busca vetorial:          backend/greenflight.py (search_projects) · backend/db.py (knowledge_search) · sql/setup_tidb.sql
-Chamadas ao Bedrock:     backend/bedrock.py
+Conexão/consultas TiDB:  tidb-hackathon/backend/db.py · tidb-hackathon/backend/main.py · tidb-hackathon/backend/greenflight.py · tidb-hackathon/sql/setup_tidb.sql
+Busca vetorial:          tidb-hackathon/backend/greenflight.py (search_projects) · tidb-hackathon/backend/db.py (knowledge_search) · tidb-hackathon/sql/setup_tidb.sql
+Chamadas ao Bedrock:     tidb-hackathon/backend/bedrock.py
 
 ## Demo
 Link do vídeo de 2 minutos ou da aplicação no ar: (preencher)
 
 ## Como rodar
 ```bash
+cd tidb-hackathon
 cd backend && python3.11 -m venv .venv && ./.venv/bin/pip install -r requirements.txt
 cp .env.example .env   # preencha TiDB e chave Bedrock; vazio = modo local com o dump oficial
 cd ../frontend && npm ci && npm run build

@@ -4,12 +4,12 @@
 # Uso: bash deploy.sh [repo-https] [subpasta]
 set -euo pipefail
 REPO="${1:-https://github.com/notreg-stack/greenflight-latam-hackathon-007.git}"
-DIR="${2:-.}"
+DIR="${2:-tidb-hackathon}"
 
 sudo dnf install -y -q git python3.11 python3.11-pip            # nem git nem pip vêm instalados; python do sistema é 3.9
-[ -d greenflight ] || git clone --depth 1 "$REPO" greenflight             # clone por HTTPS: só 443/80/4000 saem da EC2
+[ -d greenflight/.git ] || git clone --depth 1 "$REPO" greenflight       # clone por HTTPS: só 443/80/4000 saem da EC2
+git -C greenflight pull --ff-only -q
 cd "greenflight/$DIR"
-git pull -q || true
 python3.11 -m pip install -q -r backend/requirements.txt
 
 if [ ! -d frontend/dist ]; then                                  # dist vem commitado; só builda se faltar (npm pesa na t3.micro)

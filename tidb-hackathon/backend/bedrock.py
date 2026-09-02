@@ -33,7 +33,12 @@ def client():
 
 
 def available() -> bool:
-    return bool(os.environ.get("AWS_BEARER_TOKEN_BEDROCK") or os.environ.get("BEDROCK_ACCESS_KEY_ID") or os.environ.get("AWS_ACCESS_KEY_ID"))
+    return bool(
+        os.environ.get("AWS_BEARER_TOKEN_BEDROCK")
+        or os.environ.get("BEDROCK_ACCESS_KEY_ID")
+        or os.environ.get("AWS_ACCESS_KEY_ID")
+        or os.environ.get("AWS_PROFILE")
+    )
 
 
 def selftest() -> str:
