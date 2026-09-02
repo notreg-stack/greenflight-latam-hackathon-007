@@ -157,6 +157,10 @@ def purchase(p: Purchase):
         alts = _flight_rows(f"f.flight_id IN ({ph})", tuple(p.alternatives))
     worst = max([a["per_pax_kg"] for a in alts] + [chosen["per_pax_kg"]])
     avoided = round(worst - chosen["per_pax_kg"], 1)
+    if len(alts) >= 2:   # mesmo selo relativo que a busca mostrou
+        ranked = sorted(alts + [chosen], key=lambda x: x["per_pax_kg"])
+        pos = next(i for i, x in enumerate(ranked) if x["flight_id"] == chosen["flight_id"])
+        chosen["label"] = "ABCDE"[min(int(pos * 5 / len(ranked)), 4)]
     chosen_over = json.dumps([{"flightno": a["flightno"], "per_pax_kg": a["per_pax_kg"], "price": a["price"]} for a in alts])
     with db.cursor() as cur:
         cur.execute(
