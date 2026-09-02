@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "name": "Smoke test da API ao salvar",
+  "description": "Quando um arquivo do backend é salvo, roda o smoke test contra a API local e reporta falhas.",
+  "version": "1",
+  "when": { "type": "fileEdited", "patterns": ["backend/*.py"] },
+  "then": { "type": "askAgent", "prompt": "Rode `bash scripts/smoke.sh` e, se algum endpoint falhar, corrija o backend mantendo compatibilidade TiDB e SQLite conforme .kiro/steering/tech.md." }
+}

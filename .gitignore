@@ -1,0 +1,39 @@
+# segredos
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# python
+backend/.venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# dados locais (dump baixado e SQLite de fallback)
+backend/data/
+*.sqlite
+*.sqlite3
+*.sql.gz
+
+# node / build
+frontend/node_modules/
+node_modules/
+frontend/dist/
+dist/
+.vite/
+
+# logs e temporários
+*.log
+app.log
+nohup.out
+chrome-profile/
+.cache/
+
+# sistema / editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

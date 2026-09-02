@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+pymysql
+boto3>=1.39
+python-dotenv
