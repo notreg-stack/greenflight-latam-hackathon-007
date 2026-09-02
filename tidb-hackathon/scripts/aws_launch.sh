@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Lança a EC2 do CO²mpensa Aí em sa-east-1 a partir do CloudShell (ou de qualquer CLI autenticada na conta).
-# Uso: bash aws_launch.sh <URL-do-.env> [nome]
-# O .env é buscado pela instância uma única vez no boot (URL temporária), nunca fica neste script.
+# Uso: bash aws_launch.sh <URL-temporária-do-.env> [nome]
+# A instância busca o .env pela URL no boot e a cada minuto (enquanto a URL responder), reiniciando o app se mudar.
+# Assim dá para subir sem o TiDB e trocar o .env depois, sem SSH. O segredo nunca fica neste script.
 set -euo pipefail
 ENV_URL="${1:?informe a URL temporária do .env}"
 NAME="${2:-co2mpensa-ai}"
@@ -17,13 +18,26 @@ if [ -z "$SG" ] || [ "$SG" = "None" ]; then
 fi
 AMI=$(aws ssm get-parameter --region $REGION --name /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 --query Parameter.Value --output text)
 
-USERDATA=$(cat <<EOF
+USERDATA=$(cat <<'EOF'
 #!/bin/bash
 set -x
-dnf install -y git python3.11 python3.11-pip
-cd /opt && git clone --depth 1 $REPO co2mpensa && cd co2mpensa/tidb-hackathon
+dnf install -y git python3.11 python3.11-pip cronie
+cd /opt && git clone --depth 1 __REPO__ co2mpensa && cd co2mpensa/tidb-hackathon
 python3.11 -m pip install -q -r backend/requirements.txt
-curl -fsSL "$ENV_URL" -o backend/.env && chmod 600 backend/.env
+echo "__ENV_URL__" > /opt/co2mpensa/.env_url
+curl -fsSL "__ENV_URL__" -o backend/.env && chmod 600 backend/.env
+cat > /usr/local/bin/co2-refresh-env <<'SH'
+#!/bin/bash
+URL="$(cat /opt/co2mpensa/.env_url 2>/dev/null)"; [ -z "$URL" ] && exit 0
+TMP=$(mktemp)
+if curl -fsSL --max-time 20 "$URL" -o "$TMP" && [ -s "$TMP" ] && ! cmp -s "$TMP" /opt/co2mpensa/tidb-hackathon/backend/.env; then
+  cp "$TMP" /opt/co2mpensa/tidb-hackathon/backend/.env && chmod 600 /opt/co2mpensa/tidb-hackathon/backend/.env && systemctl restart co2mpensa
+fi
+rm -f "$TMP"
+SH
+chmod +x /usr/local/bin/co2-refresh-env
+echo "* * * * * root /usr/local/bin/co2-refresh-env" > /etc/cron.d/co2-refresh
+systemctl enable --now crond
 cat > /etc/systemd/system/co2mpensa.service <<'UNIT'
 [Unit]
 Description=CO2mpensa Ai (GreenFlight) API + frontend
@@ -39,6 +53,8 @@ UNIT
 systemctl daemon-reload && systemctl enable --now co2mpensa
 EOF
 )
+USERDATA="${USERDATA//__REPO__/$REPO}"
+USERDATA="${USERDATA//__ENV_URL__/$ENV_URL}"
 
 ID=$(aws ec2 run-instances --region $REGION --image-id "$AMI" --instance-type t3.small --subnet-id "$SUBNET" --security-group-ids "$SG" \
   --associate-public-ip-address --user-data "$USERDATA" \
