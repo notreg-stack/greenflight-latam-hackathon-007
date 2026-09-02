@@ -17,15 +17,33 @@ _client = None
 
 
 def client():
+    """Chave do time (par ACCESS_KEY/SECRET emitido para ap-southeast-1) ou bearer token.
+    As chaves ficam em BEDROCK_* para não sequestrar a role da EC2 usada pelo S3."""
     global _client
     if _client is None:
         import boto3
-        _client = boto3.client("bedrock-runtime", region_name=REGION)
+        kw = {"region_name": REGION}
+        if os.environ.get("BEDROCK_ACCESS_KEY_ID"):
+            kw.update(aws_access_key_id=os.environ["BEDROCK_ACCESS_KEY_ID"],
+                      aws_secret_access_key=os.environ["BEDROCK_SECRET_ACCESS_KEY"])
+        _client = boto3.client("bedrock-runtime", **kw)
     return _client
 
 
 def available() -> bool:
-    return bool(os.environ.get("AWS_BEARER_TOKEN_BEDROCK") or os.environ.get("AWS_ACCESS_KEY_ID"))
+    return bool(os.environ.get("AWS_BEARER_TOKEN_BEDROCK") or os.environ.get("BEDROCK_ACCESS_KEY_ID") or os.environ.get("AWS_ACCESS_KEY_ID"))
+
+
+def selftest() -> str:
+    """python -c 'import bedrock; print(bedrock.selftest())'  → confirma região e chave antes da demo."""
+    if not available():
+        return "sem credenciais Bedrock no .env"
+    try:
+        return "OK Bedrock ap-southeast-1: " + converse("Responda só: pronto para decolar.", "Responda em português, uma frase.", max_tokens=30)
+    except Exception as e:
+        msg = str(e)
+        hint = " (credencial negada quase sempre é região errada: a chave só vale em ap-southeast-1)" if "Denied" in msg or "Unrecognized" in msg or "security token" in msg else ""
+        return "FALHOU: " + msg[:160] + hint
 
 
 def converse(prompt: str, system: str, model: str = HAIKU, max_tokens: int = 500) -> str:

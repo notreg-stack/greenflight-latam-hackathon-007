@@ -79,14 +79,19 @@ def search_projects(preference: str, k: int = 3) -> list[dict]:
     cols = "id, name, description, country, project_type, price_per_ton"
     with db.cursor() as cur:
         if db.USING_TIDB:
-            try:
-                cur.execute(f"SELECT {cols}, VEC_EMBED_COSINE_DISTANCE(embedding, %s) AS distance FROM carbon_project ORDER BY distance LIMIT %s", (preference, k))
-                out = db.rows(cur)
-                for r in out:
-                    r["distance"] = round(float(r["distance"]), 4); r["engine"] = "tidb-vector"
-                return out
-            except Exception as e:
-                print("[greenflight] vetor indisponível:", str(e)[:100])
+            for sql in (   # forma curta (docs TiDB) e forma exata do briefing: VEC_COSINE_DISTANCE + EMBED_TEXT
+                f"SELECT {cols}, VEC_EMBED_COSINE_DISTANCE(embedding, %s) AS distance FROM carbon_project ORDER BY distance LIMIT %s",
+                f"SELECT {cols}, VEC_COSINE_DISTANCE(embedding, EMBED_TEXT('tidbcloud_free/amazon/titan-embed-text-v2', %s)) AS distance FROM carbon_project ORDER BY distance LIMIT %s",
+            ):
+                try:
+                    cur.execute(sql, (preference, k))
+                    out = db.rows(cur)
+                    for r in out:
+                        r["distance"] = round(float(r["distance"]), 4); r["engine"] = "tidb-vector"
+                    return out
+                except Exception as e:
+                    print("[greenflight] vetor:", str(e)[:100])
+            print("[greenflight] vetor indisponível, usando palavras")
         cur.execute(f"SELECT {cols} FROM carbon_project")
         rows = db.rows(cur)
     words = set(re.findall(r"\w{4,}", preference.lower()))

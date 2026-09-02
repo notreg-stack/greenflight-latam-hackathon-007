@@ -20,8 +20,8 @@ backend/data/
 # node / build
 frontend/node_modules/
 node_modules/
-frontend/dist/
-dist/
+# frontend/dist é commitado de propósito: evita npm na EC2 de 913 MB
+
 .vite/
 
 # logs e temporários

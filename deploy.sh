@@ -1,15 +1,34 @@
 #!/usr/bin/env bash
-# GreenFlight · deploy na EC2 do time (sa-east-1, Amazon Linux 2023, 913 MB). Rode via Session Manager.
+# GreenFlight · deploy na EC2 do time 007 (sa-east-1, Amazon Linux 2023, t3.micro 913 MB).
+# Rode via Session Manager (EC2 → Connect → Session Manager). Portas abertas: 8000-8999 e 3000. Bind sempre em 0.0.0.0.
+# Uso: bash deploy.sh [repo-https] [subpasta]
 set -euo pipefail
 REPO="${1:-https://github.com/henriqueleandro-arch/LatamHackathon.git}"
 DIR="${2:-projects/latam-hackathon-007}"
-sudo dnf install -y -q git python3.11 python3.11-pip nodejs npm
-[ -d LatamHackathon ] || chop git clone --depth 1 "$REPO"
+
+sudo dnf install -y -q git python3.11 python3.11-pip            # nem git nem pip vêm instalados; python do sistema é 3.9
+[ -d LatamHackathon ] || git clone --depth 1 "$REPO"             # clone por HTTPS: só 443/80/4000 saem da EC2
 cd "LatamHackathon/$DIR"
+git pull -q || true
 python3.11 -m pip install -q -r backend/requirements.txt
-( cd frontend && chop npm ci --silent && chop npm run build )
-[ -f backend/.env ] || { cp backend/.env.example backend/.env; echo ">> edite backend/.env (TiDB + chave Bedrock) e rode de novo"; exit 1; }
+
+if [ ! -d frontend/dist ]; then                                  # dist vem commitado; só builda se faltar (npm pesa na t3.micro)
+  sudo dnf install -y -q nodejs npm
+  ( cd frontend && npm ci --silent && npm run build )
+fi
+
+if [ ! -f backend/.env ]; then
+  cp backend/.env.example backend/.env
+  echo ">> Preencha backend/.env (TiDB + chave Bedrock do time) com um heredoc, não com vi, e rode de novo:"
+  echo "   cat > backend/.env <<'ENV'"; echo "   ...conteúdo..."; echo "   ENV"; echo "   chmod 600 backend/.env"
+  exit 1
+fi
+chmod 600 backend/.env
+
 pkill -f "uvicorn main:app" || true
-cd backend && nohup python3.11 -m uvicorn main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 < /dev/null &
-sleep 3; curl -s localhost:8000/api/health; echo
-echo "URL: http://$(curl -s http://checkip.amazonaws.com):8000"
+cd backend
+setsid nohup python3.11 -m uvicorn main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 < /dev/null &
+sleep 4
+curl -s localhost:8000/api/health; echo
+python3.11 -c "import bedrock; print(bedrock.selftest())"
+echo "URL pública (muda a cada stop/start da instância): http://$(curl -s http://checkip.amazonaws.com):8000"

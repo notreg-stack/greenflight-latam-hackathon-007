@@ -23,7 +23,9 @@ PH = "%s" if USING_TIDB else "?"     # placeholder do driver
 
 def _tidb_conn():
     import pymysql
-    ca = os.environ.get("TIDB_SSL_CA") or ("/etc/ssl/cert.pem" if Path("/etc/ssl/cert.pem").exists() else None)
+    # TLS é obrigatório no endpoint público: macOS usa /etc/ssl/cert.pem, Amazon Linux usa o ca-bundle
+    candidates = [os.environ.get("TIDB_SSL_CA"), "/etc/ssl/cert.pem", "/etc/pki/tls/certs/ca-bundle.crt", "/etc/ssl/certs/ca-certificates.crt"]
+    ca = next((c for c in candidates if c and Path(c).exists()), None)
     return pymysql.connect(
         host=os.environ["TIDB_HOST"], port=int(os.environ.get("TIDB_PORT", "4000")),
         user=os.environ["TIDB_USER"], password=os.environ["TIDB_PASSWORD"],
@@ -159,13 +161,16 @@ def knowledge_search(question: str, k: int = 3) -> list[dict]:
     """Busca vetorial no TiDB (EMBED_TEXT); no SQLite, busca por palavra."""
     with cursor() as cur:
         if USING_TIDB:
-            try:
-                cur.execute(
-                    "SELECT topic, content FROM eco_knowledge "
-                    "ORDER BY VEC_EMBED_COSINE_DISTANCE(emb, %s) LIMIT %s", (question, k))
-                return rows(cur)
-            except Exception as e:
-                print("[db] vetor indisponível, caindo para LIKE:", str(e)[:100])
+            for sql in (   # forma curta (docs) e forma exata do briefing do evento
+                "SELECT topic, content FROM eco_knowledge ORDER BY VEC_EMBED_COSINE_DISTANCE(emb, %s) LIMIT %s",
+                "SELECT topic, content FROM eco_knowledge ORDER BY VEC_COSINE_DISTANCE(emb, EMBED_TEXT('tidbcloud_free/amazon/titan-embed-text-v2', %s)) LIMIT %s",
+            ):
+                try:
+                    cur.execute(sql, (question, k))
+                    return rows(cur)
+                except Exception as e:
+                    print("[db] vetor:", str(e)[:100])
+            print("[db] vetor indisponível, caindo para LIKE")
         words = [w for w in re.findall(r"\w{4,}", question.lower())][:4] or ["emiss"]
         where = " OR ".join(["LOWER(content) LIKE " + PH] * len(words))
         cur.execute(f"SELECT topic, content FROM eco_knowledge WHERE {where} LIMIT {int(k)}",
