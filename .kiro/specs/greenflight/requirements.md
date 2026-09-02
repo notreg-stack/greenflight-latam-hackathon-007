@@ -36,3 +36,12 @@ Dashboard de busca e compra de passagens que mostra a pegada de carbono de cada 
 - 6.1 Dados no TiDB Cloud Starter em `sa-east-1`; modo local só como fallback de demo.
 - 6.2 Deploy na EC2 do time em `sa-east-1`, porta 8000, bind `0.0.0.0`.
 - 6.3 Nenhum segredo no repositório.
+### R7 — Compensação no checkout (GreenFlight)
+- 7.1 Após a compra o sistema DEVE mostrar a emissão do assento, o preço da compensação (toneladas × R$/t do projeto) e os Green Points.
+- 7.2 QUANDO o passageiro descreve o projeto que quer apoiar ENTÃO o sistema DEVE buscar os 3 projetos mais próximos em `carbon_project` por busca vetorial (`EMBED_TEXT`) e pedir ao Bedrock a recomendação com justificativa em JSON.
+- 7.3 QUANDO a compensação é confirmada ENTÃO o sistema DEVE gravar `carbon_offset`, creditar `green_reward` e atualizar `green_wallet` na mesma transação lógica.
+- 7.4 A tela de rewards DEVE mostrar pontos, próximo benefício, CO₂ compensado e viagens compensadas.
+
+### R8 — Dashboard ESG da companhia
+- 8.1 O sistema DEVE expor adesão (compensações ÷ passagens), CO₂ compensado, participantes, projetos, Green Points e valor destinado.
+- 8.2 O sistema DEVE listar projetos mais escolhidos e adesão por rota.
