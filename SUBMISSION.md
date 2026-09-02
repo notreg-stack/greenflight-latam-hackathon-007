@@ -2,6 +2,7 @@
 
 ## Time
 Nome do time: latam-hackathon-007 · GreenFlight
+Repositório: https://github.com/notreg-stack/greenflight-latam-hackathon-007
 Integrantes: (preencher)
 
 ## Pitch

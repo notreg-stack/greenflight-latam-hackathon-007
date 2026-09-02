@@ -3,12 +3,12 @@
 # Rode via Session Manager (EC2 → Connect → Session Manager). Portas abertas: 8000-8999 e 3000. Bind sempre em 0.0.0.0.
 # Uso: bash deploy.sh [repo-https] [subpasta]
 set -euo pipefail
-REPO="${1:-https://github.com/henriqueleandro-arch/LatamHackathon.git}"
-DIR="${2:-projects/latam-hackathon-007}"
+REPO="${1:-https://github.com/notreg-stack/greenflight-latam-hackathon-007.git}"
+DIR="${2:-.}"
 
 sudo dnf install -y -q git python3.11 python3.11-pip            # nem git nem pip vêm instalados; python do sistema é 3.9
-[ -d LatamHackathon ] || git clone --depth 1 "$REPO"             # clone por HTTPS: só 443/80/4000 saem da EC2
-cd "LatamHackathon/$DIR"
+[ -d greenflight ] || git clone --depth 1 "$REPO" greenflight             # clone por HTTPS: só 443/80/4000 saem da EC2
+cd "greenflight/$DIR"
 git pull -q || true
 python3.11 -m pip install -q -r backend/requirements.txt
 

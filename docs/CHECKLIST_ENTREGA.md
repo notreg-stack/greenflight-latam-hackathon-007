@@ -24,7 +24,7 @@ Mapeado do briefing "Ask the Airport" e do documento de credenciais. Ordem = ord
 - Demo e pitch (10): roteiro em `docs/ARQUITETURA_GREENFLIGHT.md` seções 39–40; mostre, não descreva.
 
 ## Submissão (2:05 em diante)
-- [ ] Repositório **público** do time no GitHub (README do evento: não forkar o principal, não abrir PR). Se a organização pediu a pasta `projects/latam-hackathon-007` no repositório principal, confirmar com um organizador como publicar lá; `main` é protegido.
+- [x] Repositório **público** do time no GitHub: https://github.com/notreg-stack/greenflight-latam-hackathon-007 (a pasta `projects/latam-hackathon-007` do repositório principal não é usada, segundo `projects/README.md`).
 - [ ] `SUBMISSION.md` na raiz, template exato, caixinhas só do que existe, "Onde olhar" com caminhos reais.
 - [ ] `.env` fora do repo (`.gitignore` já cobre), `.env.example` dentro.
 - [ ] Push de tudo **antes** de comentar. A organização forka no fechamento e o fork não sincroniza.
