@@ -48,6 +48,8 @@ def credential_mode() -> str:
         return "bearer token (AWS_BEARER_TOKEN_BEDROCK)"
     if os.environ.get("AWS_ACCESS_KEY_ID"):
         return "AWS_ACCESS_KEY_ID genérico (cuidado: sequestra a role da EC2 para o S3)"
+    if os.environ.get("AWS_PROFILE"):
+        return f"perfil AWS ({os.environ['AWS_PROFILE']})"
     return "nenhuma"
 
 
