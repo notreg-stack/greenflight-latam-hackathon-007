@@ -122,6 +122,10 @@ def search(origin: int | None = None, destination: int | None = None,
     if results:
         best = min(results, key=lambda x: x["per_pax_kg"]); cheapest = min(results, key=lambda x: x["price"])
         worst = max(results, key=lambda x: x["per_pax_kg"])
+        if len(results) >= 3:   # selo relativo à busca: A = 20% mais limpos … E = 20% piores (absoluto fica no recibo)
+            ranked = sorted(results, key=lambda x: x["per_pax_kg"])
+            for i, r in enumerate(ranked):
+                r["label"] = "ABCDE"[min(int(i * 5 / len(ranked)), 4)]
         for r in results:
             r["is_greenest"] = r["flight_id"] == best["flight_id"]
             r["is_cheapest"] = r["flight_id"] == cheapest["flight_id"]
