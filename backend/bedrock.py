@@ -36,15 +36,38 @@ def available() -> bool:
     return bool(os.environ.get("AWS_BEARER_TOKEN_BEDROCK") or os.environ.get("BEDROCK_ACCESS_KEY_ID") or os.environ.get("AWS_ACCESS_KEY_ID"))
 
 
+def credential_mode() -> str:
+    if os.environ.get("BEDROCK_ACCESS_KEY_ID"):
+        return "par de chaves do time (BEDROCK_ACCESS_KEY_ID)"
+    if os.environ.get("AWS_BEARER_TOKEN_BEDROCK"):
+        return "bearer token (AWS_BEARER_TOKEN_BEDROCK)"
+    if os.environ.get("AWS_ACCESS_KEY_ID"):
+        return "AWS_ACCESS_KEY_ID genérico (cuidado: sequestra a role da EC2 para o S3)"
+    return "nenhuma"
+
+
 def selftest() -> str:
-    """python -c 'import bedrock; print(bedrock.selftest())'  → confirma região e chave antes da demo."""
+    """python -c 'import bedrock; print(bedrock.selftest())'  → confirma região e chave antes da demo.
+    Regra do briefing: a chave só vale em ap-southeast-1; em qualquer outra região o erro é de
+    credencial/acesso negado, nunca "região errada". Por isso a região é fixa no código, não no .env."""
     if not available():
         return "sem credenciais Bedrock no .env"
+    region = client().meta.region_name
+    if region != REGION:
+        return f"FALHOU antes de chamar: cliente apontado para {region}; a chave só autentica em {REGION}"
     try:
-        return "OK Bedrock ap-southeast-1: " + converse("Responda só: pronto para decolar.", "Responda em português, uma frase.", max_tokens=30)
+        reply = converse("Responda só: pronto para decolar.", "Responda em português, uma frase.", max_tokens=30)
+        return f"OK Bedrock {region} · credencial: {credential_mode()} · AWS_REGION no ambiente: {os.environ.get('AWS_REGION', '(não definido)')} · resposta: {reply}"
     except Exception as e:
         msg = str(e)
-        hint = " (credencial negada quase sempre é região errada: a chave só vale em ap-southeast-1)" if "Denied" in msg or "Unrecognized" in msg or "security token" in msg else ""
+        if "IncompleteSignature" in msg or "Credential' parameter" in msg:
+            hint = " → linha AWS_BEARER_TOKEN_BEDROCK= vazia no .env faz o boto3 tentar bearer; apague a linha ou preencha"
+        elif any(k in msg for k in ("AccessDenied", "UnrecognizedClient", "InvalidSignature", "security token", "ExpiredToken")):
+            hint = " → erro de credencial no Bedrock quase sempre é região errada (a chave só vale em ap-southeast-1); se a região está certa, falta o formulário de primeiro uso dos modelos Anthropic no console, ou a chave é de outro time"
+        elif "ValidationException" in msg:
+            hint = " → modelo não existe em ap-southeast-1 (Titan e Mistral não estão lá); use os IDs de bedrock.py"
+        else:
+            hint = ""
         return "FALHOU: " + msg[:160] + hint
 
 
