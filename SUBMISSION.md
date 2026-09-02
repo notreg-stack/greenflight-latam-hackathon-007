@@ -15,7 +15,7 @@ O passageiro busca origem e destino no dataset airportdb; cada voo recebe selo A
 - [x] TiDB Cloud Starter na AWS sa-east-1 (cluster `co2mpensa-ai`, ID 10148050918410785156, Starter, Sao Paulo sa-east-1; airportdb importado com as 12 tabelas: 5.191 voos, 617.062 reservas, 36.095 passageiros; o app roda em modo TiDB, ver `/api/health` → `"db":"tidb"`)
 - [x] Busca vetorial no TiDB (colunas `VECTOR(1024)` geradas por `EMBED_TEXT` com `VECTOR INDEX` em `carbon_project` e `eco_knowledge`; consulta `VEC_EMBED_COSINE_DISTANCE` executada no cluster, motor `tidb-vector` em `/api/carbon/projects/recommend`)
 - [x] Amazon Bedrock (ap-southeast-1)
-- [x] Publicado na AWS  -> URL no ar: http://18.230.65.112:8000 (EC2 t3.small em sa-east-1, instância i-08e5dc255aa088d0f, lançada por `tidb-hackathon/scripts/aws_launch.sh`; espelho: https://crimes-producers-ferrari-violation.trycloudflare.com)
+- [x] Publicado na AWS  -> URL no ar: http://18.230.65.112:8000 (EC2 t3.small em sa-east-1, instância i-08e5dc255aa088d0f, lançada por `tidb-hackathon/scripts/aws_launch.sh`, conectada ao TiDB Cloud e ao Bedrock; espelho: https://crimes-producers-ferrari-violation.trycloudflare.com)
 - [x] Construído com Kiro (`tidb-hackathon/.kiro/` commitado)
 
 ## Onde olhar
