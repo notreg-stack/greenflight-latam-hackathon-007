@@ -12,8 +12,8 @@ GreenFlight mostra, no momento da compra, quanto CO₂ cada assento custa com a 
 O passageiro busca origem e destino no dataset airportdb; cada voo recebe selo A–E, kg CO₂ por passageiro (distância × aeronave ÷ ocupação, recalculado a cada compra) e preço, com um ticker de emissão em tempo real dos voos do dia. No checkout, o app mostra os Green Points e o próximo benefício, oferece a compensação com o valor por tonelada, o passageiro descreve o projeto que quer apoiar, o TiDB Vector Search acha os projetos mais próximos e o Bedrock recomenda e explica; ao confirmar, a compensação vira Green Points na carteira. O dashboard ESG da companhia mostra adesão, CO₂ compensado, projetos, adesão por rota e a análise do airportdb inteiro: emissão por trecho, toneladas na semana e valor da compensação por tonelada.
 
 ## Stack — marque o que você realmente usou
-- [x] TiDB Cloud Starter na AWS sa-east-1
-- [x] Busca vetorial no TiDB (coluna VECTOR ou EMBED_TEXT)
+- [ ] TiDB Cloud Starter na AWS sa-east-1 (cluster e conexão ainda não validados)
+- [ ] Busca vetorial no TiDB (implementada no código; execução no cluster ainda não validada)
 - [x] Amazon Bedrock (ap-southeast-1)
 - [ ] Publicado na AWS  -> URL no ar: (EC2 pendente; demo online em https://crimes-producers-ferrari-violation.trycloudflare.com)
 - [x] Construído com Kiro (`tidb-hackathon/.kiro/` commitado)

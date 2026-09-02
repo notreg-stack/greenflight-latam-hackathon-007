@@ -29,6 +29,6 @@ pkill -f "uvicorn main:app" || true
 cd backend
 setsid nohup python3.11 -m uvicorn main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 < /dev/null &
 sleep 4
-curl -s localhost:8000/api/health; echo
+curl -s http://0.0.0.0:8000/api/health; echo
 python3.11 -c "import bedrock; print(bedrock.selftest())"
 echo "URL pública (muda a cada stop/start da instância): http://$(curl -s http://checkip.amazonaws.com):8000"
