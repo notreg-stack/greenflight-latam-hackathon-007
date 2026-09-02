@@ -1,12 +1,12 @@
 # SUBMISSION.md
 
 ## Time
-Nome do time: latam-hackathon-007 · GreenFlight
+Nome do time: latam-hackathon-007 · CO²mpensa Aí (codinome GreenFlight)
 Repositório: https://github.com/notreg-stack/greenflight-latam-hackathon-007
 Integrantes: time latam-hackathon-007 (nomes a preencher pelo time)
 
 ## Pitch
-GreenFlight mostra, no momento da compra, quanto CO₂ cada assento custa com a ocupação real do voo, deixa o passageiro escolher o trecho por carbono além de preço e rota, e transforma a compensação em projeto recomendado por IA, Green Points e dados ESG para a companhia.
+CO²mpensa Aí ("Compense sua pegada com um clique") mostra, no momento da compra, quanto CO₂ cada assento custa com a ocupação real do voo, deixa o passageiro escolher o trecho por carbono além de preço e rota, e transforma a compensação em projeto recomendado por IA, Green Points e dados ESG para a companhia.
 
 ## O que faz
 O passageiro busca origem e destino no dataset airportdb; cada voo recebe selo A–E, kg CO₂ por passageiro (distância × aeronave ÷ ocupação, recalculado a cada compra) e preço, com um ticker de emissão em tempo real dos voos do dia. No checkout, o app mostra os Green Points e o próximo benefício, oferece a compensação com o valor por tonelada, o passageiro descreve o projeto que quer apoiar, o TiDB Vector Search acha os projetos mais próximos e o Bedrock recomenda e explica; ao confirmar, a compensação vira Green Points na carteira. O dashboard ESG da companhia mostra adesão, CO₂ compensado, projetos, adesão por rota e a análise do airportdb inteiro: emissão por trecho, toneladas na semana e valor da compensação por tonelada.

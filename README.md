@@ -1,8 +1,13 @@
-# GreenFlight - time latam-hackathon-007
+# CO²mpensa Aí - compense sua pegada com um clique
 
-O projeto do hackathon está em [`tidb-hackathon/`](tidb-hackathon/).
+<p align="center"><img src="tidb-hackathon/docs/brand/co2mpensa-ai-wordmark.png" width="320" alt="CO²mpensa Aí"></p>
 
-- Código e documentação: [`tidb-hackathon/README.md`](tidb-hackathon/README.md)
+Codinome do projeto: GreenFlight. Time `latam-hackathon-007`.
+
+O projeto completo está em [`tidb-hackathon/`](tidb-hackathon/).
+
+- Código e instruções: [`tidb-hackathon/README.md`](tidb-hackathon/README.md)
+- Arquitetura visual: [`tidb-hackathon/DESIGN.md`](tidb-hackathon/DESIGN.md)
 - Formulário oficial de entrega: [`SUBMISSION.md`](SUBMISSION.md)
 
-Essa organização mantém todo o código dentro da pasta solicitada sem retirar o `SUBMISSION.md` da raiz, onde a organização do evento espera encontrá-lo.
+Todo o código e os assets ficam dentro da pasta solicitada. O `SUBMISSION.md` permanece na raiz porque é o local exigido pelo briefing do evento.

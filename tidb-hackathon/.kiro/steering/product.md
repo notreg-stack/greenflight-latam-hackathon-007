@@ -1,4 +1,6 @@
-# GreenFlight — steering de produto
+# CO²mpensa Aí (GreenFlight) — steering de produto
+
+**Marca:** CO²mpensa Aí · tagline "Compense sua pegada com um clique" · identidade em `DESIGN.md` (azul do voo, verde da folha, laranja da ação, fundo claro).
 
 **Pitch em uma linha:** o comprador de passagem escolhe o trecho vendo, ao lado do preço e do horário, quanto CO2 aquele assento custa agora, com a ocupação real do voo.
 

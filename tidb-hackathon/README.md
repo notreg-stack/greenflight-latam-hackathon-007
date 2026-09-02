@@ -1,4 +1,8 @@
-# GreenFlight — turn every flight into measurable climate action
+# CO²mpensa Aí - compense sua pegada com um clique
+
+<p align="center"><img src="docs/brand/co2mpensa-ai-wordmark.png" width="320" alt="CO²mpensa Aí"></p>
+
+Codinome do projeto: GreenFlight.
 
 Hackathon TiDB × AWS · São Paulo · 02/09/2026 · time **latam-hackathon-007**
 
