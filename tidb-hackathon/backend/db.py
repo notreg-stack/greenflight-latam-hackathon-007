@@ -21,17 +21,43 @@ USING_TIDB = bool(os.environ.get("TIDB_HOST"))
 PH = "%s" if USING_TIDB else "?"     # placeholder do driver
 
 
+_resolved: dict = {}
+
+
+def _resolve(host: str) -> tuple[str, bool]:
+    """Devolve (host_ou_ip, verificar_hostname). Se o DNS local falhar (wi-fi de evento), usa o 8.8.8.8 via dig."""
+    import socket, subprocess
+    try:
+        socket.getaddrinfo(host, 4000); return host, True
+    except socket.gaierror:
+        pass
+    if host not in _resolved:
+        try:
+            out = subprocess.run(["dig", "+short", "@8.8.8.8", host], capture_output=True, text=True, timeout=8).stdout.split()
+            ip = next((x for x in out if x.replace(".", "").isdigit()), None)
+        except Exception:
+            ip = None
+        _resolved[host] = ip or os.environ.get("TIDB_HOST_IP")
+    if _resolved[host]:
+        print(f"[db] DNS local falhou para {host}; usando IP {_resolved[host]} (TLS sem checagem de hostname)")
+        return _resolved[host], False
+    return host, True
+
+
 def _tidb_conn():
     import pymysql
     # TLS é obrigatório no endpoint público: macOS usa /etc/ssl/cert.pem, Amazon Linux usa o ca-bundle
     candidates = [os.environ.get("TIDB_SSL_CA"), "/etc/ssl/cert.pem", "/etc/pki/tls/certs/ca-bundle.crt", "/etc/ssl/certs/ca-certificates.crt"]
     ca = next((c for c in candidates if c and Path(c).exists()), None)
+    host, check = _resolve(os.environ["TIDB_HOST"])
+    ssl = {"ca": ca} if ca else {"ssl": True}
+    if not check:
+        ssl["check_hostname"] = False
     return pymysql.connect(
-        host=os.environ["TIDB_HOST"], port=int(os.environ.get("TIDB_PORT", "4000")),
+        host=host, port=int(os.environ.get("TIDB_PORT", "4000")),
         user=os.environ["TIDB_USER"], password=os.environ["TIDB_PASSWORD"],
         database=os.environ.get("TIDB_DATABASE", "airportdb"),
-        ssl={"ca": ca} if ca else {"ssl": True},
-        cursorclass=pymysql.cursors.DictCursor, autocommit=True,
+        ssl=ssl, cursorclass=pymysql.cursors.DictCursor, autocommit=True,
     )
 
 
