@@ -1,4 +1,4 @@
-# Pitch de 2 minutos · GreenFlight · time latam-hackathon-007
+# Pitch de 2 minutos · CO²mpensa Aí (GreenFlight) · time latam-hackathon-007
 
 Mostre, não descreva. Uma pessoa fala, outra opera a tela já aberta em `http://<ip-da-ec2>:8000` (ou local).
 

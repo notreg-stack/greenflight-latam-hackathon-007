@@ -100,7 +100,7 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <div className="brand"><span className="leaf">✈︎</span> GreenFlight <small>escolha o assento que custa menos carbono e compense o resto no checkout</small></div>
+        <div className="brand"><img src="/logo.png" alt="CO²mpensa Aí" /><div className="name">CO<sup>2</sup>mpensa Aí<small>Compense sua pegada com um clique · escolha o assento que custa menos carbono</small></div></div>
         <div className="kpis">
           <div><b>{stats?.n ?? 0}</b><span>passagens</span></div>
           <div><b>{esg?.co2_offset_kg ?? 0} kg</b><span>CO₂ compensados</span></div>
@@ -112,7 +112,7 @@ export default function App() {
 
       {view === 'airline' && esg && (
         <section className="esg">
-          <h2>GreenFlight · ESG Dashboard da companhia</h2>
+          <h2>CO²mpensa Aí · ESG Dashboard da companhia</h2>
           <div className="grid">
             <div><b>{Math.round(esg.adoption_rate * 100)}%</b><span>Carbon Offset Adoption</span></div>
             <div><b>{esg.co2_offset_kg} kg</b><span>CO₂ compensado</span></div>
@@ -231,7 +231,7 @@ export default function App() {
         )}
 
         <section className="ask">
-          <form onSubmit={ask}><input value={question} onChange={e => setQuestion(e.target.value)} placeholder="Pergunte ao GreenFlight: por que voo cheio emite menos por pessoa?" /><button className="primary" type="submit">Perguntar</button></form>
+          <form onSubmit={ask}><input value={question} onChange={e => setQuestion(e.target.value)} placeholder="Pergunte ao CO²mpensa Aí: por que voo cheio emite menos por pessoa?" /><button className="primary" type="submit">Perguntar</button></form>
           {answer && <div className="answer"><p>{answer.answer}</p>{answer.sources?.length > 0 && <small>fontes ({answer.vector ? 'busca vetorial TiDB' : 'busca local'}): {answer.sources.map(s => s.topic).join(', ')}</small>}</div>}
         </section>
       </>)}
@@ -246,7 +246,7 @@ export default function App() {
           </form>
         </div>
       )}
-      <footer>GreenFlight · time latam-hackathon-007 · dataset airportdb (junho/2015) · emissão por assento-km e ocupação em tempo real · TiDB Cloud (SQL + Vector) · Amazon Bedrock · EC2 · S3 · Kiro</footer>
+      <footer><img src="/logo.png" alt="" />CO²mpensa Aí (GreenFlight) · time latam-hackathon-007 · dataset airportdb (junho/2015) · emissão por assento-km e ocupação em tempo real · TiDB Cloud (SQL + Vector) · Amazon Bedrock · EC2 · S3 · Kiro</footer>
     </div>
   )
 }

@@ -1,4 +1,8 @@
-# GreenFlight — turn every flight into measurable climate action
+# CO²mpensa Aí — compense sua pegada com um clique
+
+<p align="center"><img src="docs/brand/co2mpensa-ai-wordmark.png" width="320" alt="CO²mpensa Aí"></p>
+
+Codinome do projeto: GreenFlight.
 
 Hackathon TiDB × AWS · São Paulo · 02/09/2026 · time **latam-hackathon-007**
 
@@ -10,6 +14,8 @@ O passageiro busca e compra a passagem vendo a pegada de carbono de cada trecho 
 - **IA:** Amazon Bedrock (Claude 3 Haiku / 3.5 Sonnet) em ap-southeast-1
 - **Infra:** EC2 sa-east-1 (`deploy.sh`), S3 para recibos
 - **Kiro:** specs, steering, hooks e MCP em `.kiro/`
+
+Identidade visual: [DESIGN.md](DESIGN.md) · logo em `docs/brand/` e `frontend/public/`.
 
 Docs: [docs/PLATAFORMA.md](docs/PLATAFORMA.md) (o que cada recurso faz) · [docs/ARQUITETURA_GREENFLIGHT.md](docs/ARQUITETURA_GREENFLIGHT.md) (visão completa) · [SUBMISSION.md](SUBMISSION.md)
 
