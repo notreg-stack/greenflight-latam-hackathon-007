@@ -22,6 +22,8 @@ def client():
     global _client
     if _client is None:
         import boto3
+        if not os.environ.get("AWS_BEARER_TOKEN_BEDROCK"):   # variável vazia faz o boto3 tentar bearer e falhar
+            os.environ.pop("AWS_BEARER_TOKEN_BEDROCK", None)
         kw = {"region_name": REGION}
         if os.environ.get("BEDROCK_ACCESS_KEY_ID"):
             kw.update(aws_access_key_id=os.environ["BEDROCK_ACCESS_KEY_ID"],
